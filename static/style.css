@@ -1,0 +1,457 @@
+/* ============================================================
+PromptHub - style.css
+1. Variables (couleurs)   2. Base   3. Boutons   4. Tuiles bento
+5. Formulaires            6. Bibliothèque et cartes   7. Responsive
+============================================================ */
+
+/* ---------- 1. Variables : thème sombre par défaut ---------- */
+:root {
+    --fond: #0b0d12;
+    --surface: #141823;
+    --surface-2: #1c2231;
+    --bordure: #2b3248;
+    --texte: #eef0f7;
+    --texte-doux: #a3abc2;
+    --accent: #6d4aff;
+    --accent-clair: #a995ff;
+    --cyan: #22d3ee;
+    --succes: #3ddc97;
+    --erreur: #ff7b8f;
+    --halo-1: rgba(109, 74, 255, 0.28);
+    --halo-2: rgba(34, 211, 238, 0.16);
+    --rayon: 20px;
+    color-scheme: dark;
+}
+
+/* Thème clair : on remplace seulement les couleurs */
+:root[data-theme="light"] {
+    --fond: #f3f4fa;
+    --surface: #ffffff;
+    --surface-2: #eceefa;
+    --bordure: #d6d9ea;
+    --texte: #14172b;
+    --texte-doux: #556079;
+    --accent: #5a38f0;
+    --accent-clair: #5a38f0;
+    --cyan: #0e7490;
+    --succes: #0b7a52;
+    --erreur: #c0263d;
+    --halo-1: rgba(90, 56, 240, 0.14);
+    --halo-2: rgba(14, 116, 144, 0.12);
+    color-scheme: light;
+}
+
+/* ---------- 2. Base ---------- */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--texte);
+    line-height: 1.55;
+    background: 
+        radial-gradient(900px 500px at 8% -8%, var(--halo-1), transparent 60%),
+        radial-gradient(700px 420px at 100% 0%, var(--halo-2), transparent 55%),
+        var(--fond);
+    background-attachment: fixed;
+}
+
+h1,
+h2,
+h3 {
+    margin: 0;
+    line-height: 1.15;
+}
+
+p {
+    margin: 0;
+}
+
+:focus-visible {
+    outline: 3px solid var(--cyan);
+    outline-offset: 3px;
+}
+
+.conteneur {
+    width: min(1120px, 100% - 2rem);
+    margin-inline: auto;
+    padding-bottom: 3rem;
+}
+
+.entete {
+    width: min(1120px, 100% - 2rem);
+    margin: 0 auto;
+    padding: 1.25rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--texte);
+    text-decoration: none;
+}
+
+.logo-pastille {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--cyan));
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.pied {
+    padding: 2rem 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--texte-doux);
+}
+
+/* ---------- 3. Boutons ---------- */
+.bouton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, border-color 0.15s ease;
+}
+
+.bouton:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.bouton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.bouton-principal {
+    background: var(--accent);
+    color: #ffffff;
+}
+
+.bouton-principal:hover:not(:disabled) {
+    filter: brightness(1.12);
+}
+
+.bouton-discret {
+    background: var(--surface-2);
+    color: var(--texte);
+    border-color: var(--bordure);
+}
+
+.bouton-discret:hover:not(:disabled) {
+    border-color: var(--accent-clair);
+}
+
+.bouton-like {
+    background: transparent;
+    color: var(--texte);
+    border-color: var(--bordure);
+}
+
+.bouton-like:hover:not(:disabled) {
+    color: var(--erreur);
+    border-color: var(--erreur);
+}
+
+/* ---------- 4. Grille bento ---------- */
+.bento {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas: 
+        "hero hero total likes"
+        "hero hero idee  idee"
+        "form form form  form";
+}
+
+.tuile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+}
+
+.tuile-hero {
+    grid-area: hero;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    background: linear-gradient(160deg, var(--surface-2), var(--surface));
+}
+
+.tuile-hero h1 {
+    font-size: clamp(2rem, 4.5vw, 3.1rem);
+    letter-spacing: -0.02em;
+}
+
+.tuile-hero .bouton {
+    align-self: flex-start;
+}
+
+.degrade {
+    background: linear-gradient(90deg, var(--accent-clair), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.tuile-total {
+    grid-area: total;
+}
+
+.tuile-likes {
+    grid-area: likes;
+}
+
+.tuile-idee {
+    grid-area: idee;
+    justify-content: space-between;
+}
+
+.tuile-idee .bouton {
+    align-self: flex-start;
+}
+
+.tuile-form {
+    grid-area: form;
+}
+
+.etiquette {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-clair);
+}
+
+.texte-doux {
+    color: var(--texte-doux);
+}
+
+.petit {
+    font-size: 0.9rem;
+}
+
+.stat-nombre {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+}
+
+.texte-idee {
+    min-height: 3.4em;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Petite animation au survol (désactivée si l'utilisateur la refuse) */
+@media (prefers-reduced-motion: no-preference) {
+    .tuile:not(.tuile-form),
+    .carte {
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .tuile:not(.tuile-form):hover,
+    .carte:hover {
+        transform: translateY(-3px);
+        border-color: var(--accent-clair);
+    }
+}
+
+/* ---------- 5. Formulaires ---------- */
+.formulaire {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+.champ {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.champ label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.champ-large {
+    grid-column: 1 / -1;
+}
+
+.ligne-envoi {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    color: var(--texte);
+    background: var(--surface-2);
+    border: 1px solid var(--bordure);
+    border-radius: 12px;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--texte-doux);
+    opacity: 1;
+}
+
+textarea {
+    min-height: 6rem;
+    resize: vertical;
+}
+
+.message {
+    min-height: 1.5em;
+    font-size: 0.95rem;
+    color: var(--texte-doux);
+}
+
+.message.ok {
+    color: var(--succes);
+}
+
+.message.erreur {
+    color: var(--erreur);
+}
+
+/* ---------- 6. Bibliothèque et cartes ---------- */
+.bibliotheque {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 3rem;
+}
+
+.bibliotheque h2 {
+    font-size: 1.75rem;
+}
+
+.filtres {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+}
+
+.grille-prompts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.carte {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+}
+
+.carte-entete {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.carte h3 {
+    font-size: 1.1rem;
+}
+
+.badge {
+    flex-shrink: 0;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-clair);
+}
+
+.prompt-contenu {
+    flex: 1;
+    font-size: 0.95rem;
+    color: var(--texte-doux);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.carte-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+/* ---------- 7. Responsive (tablette puis téléphone) ---------- */
+@media (max-width: 900px) {
+    .bento {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas: 
+            "hero  hero"
+            "total likes"
+            "idee  idee"
+            "form  form";
+    }
+}
+
+@media (max-width: 560px) {
+    .bento {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "hero"
+            "total"
+            "likes"
+            "idee"
+            "form";
+    }
+
+    .tuile-hero {
+        padding: 1.5rem;
+    }
+
+    .formulaire,
+    .filtres {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PromptHub : une bibliothèque de prompts IA à copier, partager et noter.">
+    <title>PromptHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    
+    <header class="entete">
+        <a class="logo" href="/" aria-label="PromptHub, accueil">
+            <span class="logo-pastille" aria-hidden="true">&#10022;</span>
+            PromptHub
+        </a>
+        <button id="bouton-theme" class="bouton bouton-discret" type="button">Mode clair</button>
+    </header>
+
+    <main class="conteneur">
+
+        <!-- Grille "bento" : des tuiles de tailles différentes -->
+        <section class="bento" aria-label="Présentation de PromptHub">
+
+            <article class="tuile tuile-hero">
+                <p class="etiquette">Bibliothèque collaborative</p>
+                <h1>Trouve le bon prompt, <span class="degrade">en un clic.</span></h1>
+                <p class="texte-doux">
+                    Parcours, copie et note des prompts pour ton assistant IA préféré.
+                    Ajoute les tiens pour les partager.
+                </p>
+                <a class="bouton bouton-principal" href="#bibliotheque">Voir la bibliothèque</a>
+            </article>
+
+            <article class="tuile tuile-total">
+                <p class="etiquette">Prompts</p>
+                <p class="stat-nombre" id="stat-total">0</p>
+                <p class="texte-doux petit" id="stat-top">Chargement...</p>
+            </article>
+
+            <article class="tuile tuile-likes">
+                <p class="etiquette">J'aime reçus</p>
+                <p class="stat-nombre" id="stat-likes">0</p>
+                <p class="texte-doux petit">Merci à la communauté</p>
+            </article>
+
+            <article class="tuile tuile-idee">
+                <p class="etiquette">Idée du moment (serveur Java)</p>
+                <p id="texte-idee" class="texte-idee" aria-live="polite">Clique pour recevoir une idée de prompt.</p>
+                <button id="bouton-idee" class="bouton bouton-principal" type="button">Donne-moi une idée</button>
+            </article>
+
+            <article class="tuile tuile-form">
+                <h2>Ajouter un prompt</h2>
+                <form id="formulaire-prompt" class="formulaire">
+                    <div class="champ">
+                        <label for="champ-titre">Titre</label>
+                        <input id="champ-titre" name="titre" type="text" required minlength="3" maxlength="60" placeholder="Ex : Coach de révision">
+                    </div>
+                    <div class="champ">
+                        <label for="champ-categorie">Catégorie</label>
+                        <select id="champ-categorie" name="categorie" required>
+                            {% for categorie in categories %}
+                            <option value="{{ categorie }}">{{ categorie }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="champ champ-large">
+                        <label for="champ-contenu">Contenu du prompt</label>
+                        <textarea id="champ-contenu" name="contenu" rows="4" required minlength="10" maxlength="500" placeholder="Écris ton prompt ici..."></textarea>
+                    </div>
+                    <div class="champ-large ligne-envoi">
+                        <button class="bouton bouton-principal" type="submit">Publier</button>
+                        <p id="message-formulaire" class="message" role="status"></p>
+                    </div>
+                </form>
+            </article>
+
+        </section>
+
+        <!-- Liste des prompts, remplie par JavaScript -->
+        <section id="bibliotheque" class="bibliotheque" aria-labelledby="titre-bibliotheque">
+            <h2 id="titre-bibliotheque">La bibliothèque</h2>
+
+            <div class="filtres">
+                <div class="champ">
+                    <label for="recherche">Rechercher</label>
+                    <input id="recherche" type="search" placeholder="Un mot-clé..." autocomplete="off">
+                </div>
+                <div class="champ">
+                    <label for="filtre-categorie">Catégorie</label>
+                    <select id="filtre-categorie">
+                        <option value="">Toutes</option>
+                        {% for categorie in categories %}
+                        <option value="{{ categorie }}">{{ categorie }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <p id="message-liste" class="message" role="status"></p>
+            <div id="grille-prompts" class="grille-prompts"></div>
+        </section>  
+
+    </main>
+
+    <footer class="pied">
+        Projet d'apprentissage : HTML, CSS, JavaScript, Python, SQL et Java.
+    </footer>
+
+</body>
+</html>
