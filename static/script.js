@@ -1,30 +1,46 @@
 "use strict";
 
 /* ============================================================
-PromptHub - script.js
-1. Constantes   2. Éléments de la page   3. Thème clair/sombre
-4. Appels au serveur   5. Affichage   6. Actions   7. Démarrage
-============================================================ */
+   PromptHub - script.js
+   1. Constantes   2. Éléments de la page   3. Thème clair/sombre
+   4. Appels au serveur   5. Affichage   6. Actions
+   7. Navigation (bande flottante, menu, compte)   8. Démarrage
+   ============================================================ */
 
 // ---------- 1. Constantes ----------
-const URL_PROMPTS = "/api/prompts";
+const URL_PROMPTS_APERCU = "/api/prompts/apercu";
 const URL_STATS = "/api/stats";
+const URL_SESSION = "/api/session";
+const URL_DECONNEXION = "/api/deconnexion";
 const URL_IDEE_JAVA = "http://127.0.0.1:8081/api/idee";
 const CLE_THEME = "prompthub-theme";
+const CLE_REDIRECTION = "prompthub-apres-connexion";
+const SEUIL_SCROLL_ENTETE = 80;
 
 // ---------- 2. Éléments de la page ----------
 const boutonTheme = document.getElementById("bouton-theme");
-const champRecherche = document.getElementById("recherche");
-const filtreCategorie = document.getElementById("filtre-categorie");
 const messageListe = document.getElementById("message-liste");
 const grille = document.getElementById("grille-prompts");
-const formulaire = document.getElementById("formulaire-prompt");
-const messageFormulaire = document.getElementById("message-formulaire");
 const boutonIdee = document.getElementById("bouton-idee");
 const texteIdee = document.getElementById("texte-idee");
 const statTotal = document.getElementById("stat-total");
 const statTop = document.getElementById("stat-top");
 const statLikes = document.getElementById("stat-likes");
+
+const barreNavigation = document.getElementById("entete");
+const boutonMenu = document.getElementById("bouton-menu");
+const menuNavigation = document.getElementById("menu-navigation");
+const lienBibliotheque = document.getElementById("lien-bibliotheque");
+const lienBibliothequeComplete = document.getElementById("lien-bibliotheque-complete");
+const lienMessagerie = document.getElementById("lien-messagerie");
+const lienConnexion = document.getElementById("lien-connexion");
+const blocCompteEntete = document.getElementById("bloc-compte-entete");
+const nomUtilisateurAffiche = document.getElementById("nom-utilisateur-affiche");
+const badgeAdmin = document.getElementById("badge-admin");
+const boutonDeconnexion = document.getElementById("bouton-deconnexion");
+
+// Vrai une fois qu'on sait qu'un compte est connecté (voir chargerSession).
+let connecte = false;
 
 // ---------- 3. Thème clair / sombre ----------
 function lireThemeSauvegarde() {
@@ -88,7 +104,10 @@ function creerBouton(texte, classes) {
     return bouton;
 }
 
-function creerCarte(prompt) {
+// Carte simplifiée pour l'aperçu de l'accueil : juste de quoi donner envie de
+// rejoindre la bibliothèque complète (pas de favori/note/commentaire ici, voir
+// templates/bibliotheque.html et static/bibliotheque.js pour la version complète).
+function creerCarteApercu(prompt) {
     const carte = document.createElement("article");
     carte.className = "carte";
 
@@ -108,57 +127,34 @@ function creerCarte(prompt) {
     contenu.className = "prompt-contenu";
     contenu.textContent = prompt.contenu;
 
+    const auteur = document.createElement("p");
+    auteur.className = "prompt-auteur";
+    auteur.textContent = "Par " + prompt.auteur;
+
     const actions = document.createElement("div");
     actions.className = "carte-actions";
 
     const boutonCopier = creerBouton("Copier", "bouton bouton-discret");
     boutonCopier.addEventListener("click", () => copierPrompt(prompt.contenu, boutonCopier));
 
-    const boutonLike = creerBouton("💙 " + prompt.likes, "bouton bouton-like");
-    boutonLike.setAttribute("aria-label", "Aimer le prompt " + prompt.titre);
-    boutonLike.addEventListener("click", () => aimerPrompt(prompt.id, boutonLike));
-
-    actions.append(boutonCopier, boutonLike);
-    carte.append(entete, contenu, actions);
+    actions.append(boutonCopier);
+    carte.append(entete, contenu, auteur, actions);
     return carte;
 }
 
 function afficherPrompts(prompts) {
-    grille.replaceChildren(...prompts.map(creerCarte));
+    grille.replaceChildren(...prompts.map(creerCarteApercu));
 }
 
 // ---------- 6. Actions ----------
-// Numéro de la dernière recherche : évite d'afficher une vieille réponse
-// qui arriverait après une plus récente.
-let numeroRequete = 0;
-
-async function chargerPrompts() {
-    numeroRequete += 1;
-    const numero = numeroRequete;
-
-    const parametres = new URLSearchParams();
-    const recherche = champRecherche.value.trim();
-    if (recherche) {
-        parametres.set("q", recherche);
-    }
-    if (filtreCategorie.value) {
-        parametres.set("categorie", filtreCategorie.value);
-    }
-
+async function chargerApercu() {
     try {
-        const prompts = await appelerApi(URL_PROMPTS + "?" + parametres.toString());
-        if (numero !== numeroRequete) {
-            return;
-        }
+        const prompts = await appelerApi(URL_PROMPTS_APERCU);
         afficherPrompts(prompts);
-        const mot = prompts.length > 1 ? "prompts trouvés" : "prompt trouvé";
-        afficherMessage(messageListe, prompts.length + " " + mot, "");
+        afficherMessage(messageListe, "", "");
     } catch (erreur) {
-        if (numero !== numeroRequete) {
-            return;
-        }
         grille.replaceChildren();
-        afficherMessage(messageListe, "Impossible de charger les prompts : " + erreur.message, "erreur");
+        afficherMessage(messageListe, "Impossible de charger la bibliothèque : " + erreur.message, "erreur");
     }
 }
 
@@ -179,24 +175,11 @@ async function chargerStats() {
     }
 }
 
-async function aimerPrompt(id, bouton) {
-    bouton.disabled = true;
-    try {
-        const resultat = await appelerApi(URL_PROMPTS + "/" + id + "/like", { method: "POST" });
-        bouton.textContent = "💙 " + resultat.likes;
-        chargerStats();
-    } catch (erreur) {
-        afficherMessage(messageListe, "Erreur : " + erreur.message, "erreur");
-    } finally {
-        bouton.disabled = false;
-    }
-}
-
 async function copierPrompt(texte, bouton) {
     const ancienTexte = bouton.textContent;
     try {
         await navigator.clipboard.writeText(texte);
-        bouton.textContent = "Copié \u2713";
+        bouton.textContent = "Copié ✓";
     } catch (erreur) {
         bouton.textContent = "Échec";
     }
@@ -205,38 +188,125 @@ async function copierPrompt(texte, bouton) {
     }, 1500);
 }
 
-// Recherche : on attend 300 ms après la dernière touche avant d'interroger le serveur.
-let minuteur = null;
-champRecherche.addEventListener("input", () => {
-    clearTimeout(minuteur);
-    minuteur = setTimeout(chargerPrompts, 300);
+// ---------- 7. Navigation (bande flottante, menu, compte) ----------
+// Envoie vers la page de connexion, en retenant où revenir une fois connecté.
+function redirigerVersConnexion(destination) {
+    try {
+        sessionStorage.setItem(CLE_REDIRECTION, destination);
+    } catch (erreur) {
+        // Pas grave : sans ça, on retombera simplement sur l'accueil après connexion.
+    }
+    window.location.href = "/connexion";
+}
+
+// Un lien vers une page réservée aux connectés (bibliothèque complète, messagerie) :
+// sans compte, on détourne le clic vers la connexion plutôt que de laisser le
+// visiteur atterrir sur une page qui le renverra de toute façon (voir afficherEtatConnexion).
+function protegerLien(lien, destination) {
+    lien.addEventListener("click", (evenement) => {
+        if (!connecte) {
+            evenement.preventDefault();
+            redirigerVersConnexion(destination);
+        }
+    });
+}
+
+// La bande se range quand on défile vers le bas, et revient dès qu'on remonte
+// (ou qu'on est près du haut de la page).
+let dernierScrollY = window.scrollY;
+
+function gererScrollEntete() {
+    const y = window.scrollY;
+    if (y <= SEUIL_SCROLL_ENTETE) {
+        barreNavigation.classList.remove("entete-cachee");
+    } else if (y > dernierScrollY) {
+        barreNavigation.classList.add("entete-cachee");
+        fermerMenu();
+    } else {
+        barreNavigation.classList.remove("entete-cachee");
+    }
+    dernierScrollY = y;
+}
+
+window.addEventListener("scroll", gererScrollEntete, { passive: true });
+
+// Menu ☰ : une petite liste déroulante, ouverte/fermée au clic.
+function ouvrirMenu() {
+    menuNavigation.hidden = false;
+    boutonMenu.setAttribute("aria-expanded", "true");
+}
+
+function fermerMenu() {
+    menuNavigation.hidden = true;
+    boutonMenu.setAttribute("aria-expanded", "false");
+}
+
+boutonMenu.addEventListener("click", (evenement) => {
+    evenement.stopPropagation();
+    if (menuNavigation.hidden) {
+        ouvrirMenu();
+    } else {
+        fermerMenu();
+    }
 });
 
-filtreCategorie.addEventListener("change", chargerPrompts);
+document.addEventListener("click", (evenement) => {
+    if (!menuNavigation.hidden && !menuNavigation.contains(evenement.target)) {
+        fermerMenu();
+    }
+});
 
-// Formulaire d'ajout
-formulaire.addEventListener("submit", async (evenement) => {
-    evenement.preventDefault();
+document.addEventListener("keydown", (evenement) => {
+    if (evenement.key === "Escape") {
+        fermerMenu();
+    }
+});
 
-    const donnees = {
-        titre: formulaire.elements["titre"].value.trim(),
-        categorie: formulaire.elements["categorie"].value,
-        contenu: formulaire.elements["contenu"].value.trim(),
-    };
+menuNavigation.querySelectorAll("a, button").forEach((element) => {
+    element.addEventListener("click", fermerMenu);
+});
 
-    afficherMessage(messageFormulaire, "Envoi en cours...", "");
+// La bibliothèque complète et la messagerie sont réservées aux connectés (voir
+// protegerLien plus haut) : le lien du menu et le bouton de l'aperçu y mènent tous
+// les deux.
+protegerLien(lienBibliotheque, "/bibliotheque");
+protegerLien(lienBibliothequeComplete, "/bibliotheque");
+protegerLien(lienMessagerie, "/#messagerie");
 
+// Compte : connexion, déconnexion ----------
+// Affiche l'état "connecté" ou "déconnecté" sur toute la page. Le rôle admin
+// vaut pour toute la plateforme (pas seulement la bibliothèque), donc le
+// badge s'affiche ici aussi dès que la session le confirme.
+function afficherEtatConnexion(nomUtilisateur, estAdmin = false) {
+    connecte = Boolean(nomUtilisateur);
+
+    lienConnexion.hidden = connecte;
+    blocCompteEntete.hidden = !connecte;
+
+    if (connecte) {
+        nomUtilisateurAffiche.textContent = nomUtilisateur;
+    }
+    badgeAdmin.hidden = !(connecte && estAdmin);
+}
+
+async function chargerSession() {
     try {
-        await appelerApi(URL_PROMPTS, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(donnees),
-        });
-        formulaire.reset();
-        afficherMessage(messageFormulaire, "Prompt ajouté !", "ok");
-        await Promise.all([chargerPrompts(), chargerStats()]);
+        const etat = await appelerApi(URL_SESSION);
+        afficherEtatConnexion(etat.nom_utilisateur, etat.est_admin);
     } catch (erreur) {
-        afficherMessage(messageFormulaire, erreur.message, "erreur");
+        afficherEtatConnexion(null);
+    }
+}
+
+boutonDeconnexion.addEventListener("click", async () => {
+    boutonDeconnexion.disabled = true;
+    try {
+        await appelerApi(URL_DECONNEXION, { method: "POST" });
+        afficherEtatConnexion(null);
+    } catch (erreur) {
+        afficherMessage(messageListe, erreur.message, "erreur");
+    } finally {
+        boutonDeconnexion.disabled = false;
     }
 });
 
@@ -258,7 +328,8 @@ boutonIdee.addEventListener("click", async () => {
     }
 });
 
-// ---------- 7. Démarrage ----------
+// ---------- 8. Démarrage ----------
 appliquerTheme(lireThemeSauvegarde() === "light" ? "light" : "dark");
-chargerPrompts();
+chargerApercu();
 chargerStats();
+chargerSession();

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Reprend le thème choisi sur la page d'accueil (même clé que CLE_THEME
+        // dans script.js), avant même l'affichage : sinon la page s'afficherait un
+        // bref instant en sombre avant que connexion.js ait pu la corriger.
+        try {
+            document.documentElement.dataset.theme = localStorage.getItem("prompthub-theme") === "light" ? "light" : "dark";
+        } catch (erreur) {
+            document.documentElement.dataset.theme = "dark";
+        }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PromptHub : connecte-toi ou crée ton compte.">
+    <title>Connexion — PromptHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='connexion.css') }}">
+    <script src="{{ url_for('static', filename='connexion.js') }}" defer></script>
+</head>
+<body class="page-connexion">
+
+    <!-- Décor : un fond animé en pur CSS (anneau qui tourne, grille d'hexagones,
+        halos de couleur). Rien ici n'est interactif : aria-hidden le retire des
+        lecteurs d'écran. -->
+    <div class="fond-tech" aria-hidden="true">
+        <div class="halo halo-1"></div>
+        <div class="halo halo-2"></div>
+        <div class="anneau"></div>
+        <div class="hexagones">
+            <span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span>
+            <span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span>
+        </div>
+    </div>
+
+    <a class="retour-accueil" href="/">
+        <span class="logo-pastille" aria-hidden="true">✦</span>
+        PromptHub
+    </a>
+
+    <main class="scene">
+        <div class="container" id="container">
+
+            <!-- Connexion -->
+            <div class="form-box login">
+                <form id="formulaire-connexion" novalidate>
+                    <h1>Connexion</h1>
+
+                    <div class="input-box">
+                        <input type="text" id="login-identifiant" placeholder="Pseudo ou e-mail" autocomplete="username" required>
+                        <span class="icone" aria-hidden="true">👤</span>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="password" id="login-motdepasse" placeholder="Mot de passe" autocomplete="current-password" required>
+                        <span class="icone" aria-hidden="true">🔒</span>
+                    </div>
+                    <button type="button" class="bascule-mdp" data-cible="login-motdepasse">Afficher le mot de passe</button>
+
+                    <button type="button" class="lien-oubli" id="bouton-mot-de-passe-oublie">Mot de passe oublié ?</button>
+
+                    <button type="submit" class="btn">Connexion</button>
+                    <p id="message-connexion" class="message" role="status"></p>
+
+                    <p class="social-intro">Ou connecte-toi via un réseau</p>
+                    <div class="social-icons">
+                        {% for f in fournisseurs %}
+                        {% if f.actif %}
+                        <a class="social-icone social-{{ f.id }}" href="/connexion/{{ f.id }}" aria-label="Continuer avec {{ f.nom }}">{{ f.lettre }}</a>
+                        {% else %}
+                        <span class="social-icone social-{{ f.id }} indisponible" aria-label="{{ f.nom }} : bientôt disponible" title="Bientôt disponible">{{ f.lettre }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Inscription -->
+            <div class="form-box register">
+                <form id="formulaire-inscription" novalidate>
+                    <h1>Inscription</h1>
+
+                    <div class="input-box">
+                        <input type="text" id="register-nom" placeholder="Nom" autocomplete="family-name" required minlength="2" maxlength="50">
+                        <span class="icone" aria-hidden="true">👤</span>
+                    </div>
+                    <small id="nom-message" class="indice"></small>
+
+                    <div class="input-box">
+                        <input type="text" id="register-prenom" placeholder="Prénom" autocomplete="given-name" required minlength="2" maxlength="50">
+                        <span class="icone" aria-hidden="true">👤</span>
+                    </div>
+                    <small id="prenom-message" class="indice"></small>
+
+                    <div class="input-box">
+                        <input type="email" id="register-email" placeholder="E-mail" autocomplete="email" required>
+                        <span class="icone" aria-hidden="true">✉️</span>
+                    </div>
+                    <small id="email-message" class="indice">Un code de confirmation te sera envoyé à cette adresse</small>
+
+                    <div class="input-box">
+                        <input type="password" id="register-motdepasse" placeholder="Mot de passe" autocomplete="new-password" required minlength="8">
+                        <span class="icone" aria-hidden="true">🔒</span>
+                    </div>
+                    <button type="button" class="bascule-mdp" data-cible="register-motdepasse">Afficher le mot de passe</button>
+                    <small id="motdepasse-message" class="indice">8 caractères minimum, avec une majuscule, un chiffre et un symbole</small>
+
+                    <div class="input-box">
+                        <input type="password" id="register-confirmation" placeholder="Confirme le mot de passe" autocomplete="new-password" required>
+                        <span class="icone" aria-hidden="true">🔒</span>
+                    </div>
+                    <button type="button" class="bascule-mdp" data-cible="register-confirmation">Afficher le mot de passe</button>
+                    <small id="confirmation-message" class="indice">Les mots de passe ne correspondent pas</small>
+
+                    <button type="submit" class="btn">S'inscrire</button>
+                    <p id="message-inscription" class="message" role="status"></p>
+
+                    <p class="social-intro">Ou inscris-toi via un réseau</p>
+                    <div class="social-icons">
+                        {% for f in fournisseurs %}
+                        {% if f.actif %}
+                        <a class="social-icone social-{{ f.id }}" href="/connexion/{{ f.id }}" aria-label="S'inscrire avec {{ f.nom }}">{{ f.lettre }}</a>
+                        {% else %}
+                        <span class="social-icone social-{{ f.id }} indisponible" aria-label="{{ f.nom }} : bientôt disponible" title="Bientôt disponible">{{ f.lettre }}</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Panneau glissant : bascule entre les deux formulaires -->
+            <div class="toggle-box">
+                <div class="toggle-panel toggle-left">
+                    <h1>Bonjour !</h1>
+                    <p>Pas encore de compte ?</p>
+                    <button type="button" class="btn btn-contour" id="bouton-vers-inscription">Inscris-toi</button>
+                </div>
+                <div class="toggle-panel toggle-right">
+                    <h1>Bienvenue !</h1>
+                    <p>Déjà un compte ?</p>
+                    <button type="button" class="btn btn-contour" id="bouton-vers-connexion">Connecte-toi</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Fenêtre "Mot de passe oublié" : par-dessus tout le reste, fermée par défaut. -->
+    <div class="modale" id="modale-oubli" hidden>
+        <div class="modale-fond" id="modale-oubli-fond"></div>
+        <div class="modale-carte" role="dialog" aria-modal="true" aria-labelledby="titre-modale-oubli">
+            <button type="button" class="modale-fermer" id="bouton-fermer-oubli" aria-label="Fermer">✕</button>
+            <h2 id="titre-modale-oubli">Mot de passe oublié</h2>
+            <p class="texte-doux">Indique ton e-mail : si un compte lui correspond, un lien de réinitialisation est envoyé.</p>
+
+            <form id="formulaire-oubli" novalidate>
+                <div class="input-box">
+                    <input type="email" id="oubli-email" placeholder="E-mail" autocomplete="email" required>
+                    <span class="icone" aria-hidden="true">✉️</span>
+                </div>
+                <button type="submit" class="btn">Envoyer le lien</button>
+                <p id="message-oubli" class="message" role="status"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Fenêtre "Confirme ton e-mail" : ouverte juste après l'inscription, pas de
+        bouton pour la fermer (voir connexion.js) puisque l'inscription n'est
+        complète qu'une fois le code confirmé. -->
+    <div class="modale" id="modale-verification" hidden>
+        <div class="modale-fond"></div>
+        <div class="modale-carte" role="dialog" aria-modal="true" aria-labelledby="titre-modale-verification">
+            <h2 id="titre-modale-verification">Confirme ton adresse e-mail</h2>
+            <p class="texte-doux" id="texte-modale-verification">Un code à 6 chiffres vient d'être envoyé à ton adresse e-mail. Saisis-le ci-dessous pour terminer ton inscription.</p>
+
+            <form id="formulaire-verification" novalidate>
+                <div class="input-box">
+                    <input type="text" id="code-verification" placeholder="Code à 6 chiffres" inputmode="numeric" autocomplete="one-time-code" required maxlength="6">
+                </div>
+                <button type="submit" class="btn">Confirmer</button>
+                <button type="button" class="lien-oubli" id="bouton-renvoyer-code">Renvoyer le code</button>
+                <p id="message-verification" class="message" role="status"></p>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

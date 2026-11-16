@@ -1,8 +1,8 @@
 /* ============================================================
-PromptHub - style.css
-1. Variables (couleurs)   2. Base   3. Boutons   4. Tuiles bento
-5. Formulaires            6. Bibliothèque et cartes   7. Responsive
-============================================================ */
+   PromptHub - style.css
+   1. Variables (couleurs)   2. Base   3. Boutons   4. Tuiles bento
+   5. Formulaires            6. Bibliothèque et cartes   7. Responsive
+   ============================================================ */
 
 /* ---------- 1. Variables : thème sombre par défaut ---------- */
 :root {
@@ -20,6 +20,7 @@ PromptHub - style.css
     --halo-1: rgba(109, 74, 255, 0.28);
     --halo-2: rgba(34, 211, 238, 0.16);
     --rayon: 20px;
+    --hauteur-entete: 4.5rem;
     color-scheme: dark;
 }
 
@@ -56,7 +57,7 @@ body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--texte);
     line-height: 1.55;
-    background: 
+    background:
         radial-gradient(900px 500px at 8% -8%, var(--halo-1), transparent 60%),
         radial-gradient(700px 420px at 100% 0%, var(--halo-2), transparent 55%),
         var(--fond);
@@ -79,20 +80,157 @@ p {
     outline-offset: 3px;
 }
 
+/* Certaines de nos classes fixent "display" (ex : .menu-navigation, .bouton).
+   Sans cette règle, ces classes l'emportent sur l'attribut HTML "hidden" (même
+   spécificité, mais chargée après), et un élément "masqué" resterait visible. */
+[hidden] {
+    display: none !important;
+}
+
 .conteneur {
     width: min(1120px, 100% - 2rem);
     margin-inline: auto;
     padding-bottom: 3rem;
+    padding-top: calc(var(--hauteur-entete) + 1.5rem);
 }
 
+/* ---------- Bande de navigation flottante ---------- */
 .entete {
+    position: fixed;
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
     width: min(1120px, 100% - 2rem);
-    margin: 0 auto;
-    padding: 1.25rem 0;
+    min-height: var(--hauteur-entete);
+    padding: 0.75rem 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    transition: transform 0.35s ease, top 0.35s ease;
+}
+
+/* Rangée au défilement vers le bas ; revient dès qu'on remonte (voir script.js). */
+.entete.entete-cachee {
+    transform: translateX(-50%) translateY(-140%);
+}
+
+.entete-gauche,
+.entete-droite {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.bouton-icone {
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--texte);
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.bouton-icone:hover {
+    border-color: var(--accent-clair);
+}
+
+/* Icône "trois traits superposés" dessinée en CSS pur, sans image. */
+.icone-menu,
+.icone-menu::before,
+.icone-menu::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+}
+
+.icone-menu {
+    position: relative;
+}
+
+.icone-menu::before,
+.icone-menu::after {
+    content: "";
+    position: absolute;
+    left: 0;
+}
+
+.icone-menu::before {
+    top: -6px;
+}
+
+.icone-menu::after {
+    top: 6px;
+}
+
+.menu-navigation {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 13rem;
+    padding: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.menu-navigation a,
+.menu-navigation button {
+    display: flex;
+    width: 100%;
+    padding: 0.65rem 0.85rem;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: var(--texte);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+}
+
+.menu-navigation a:hover,
+.menu-navigation button:hover {
+    background: var(--surface-2);
+    color: var(--accent-clair);
+}
+
+/* Le bouton de thème n'est pas un lien de navigation : ce trait au-dessus le
+   sépare visuellement des trois liens qui le précèdent dans le menu. */
+.menu-navigation button {
+    margin-top: 0.3rem;
+    padding-top: calc(0.65rem + 1px);
+    border-top: 1px solid var(--bordure);
+}
+
+.bloc-compte-entete {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nom-utilisateur-affiche {
+    font-weight: 700;
+    color: var(--accent-clair);
 }
 
 .logo {
@@ -183,10 +321,9 @@ p {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-areas: 
+    grid-template-areas:
         "hero hero total likes"
-        "hero hero idee  idee"
-        "form form form  form";
+        "hero hero idee  idee";
 }
 
 .tuile {
@@ -238,10 +375,6 @@ p {
 
 .tuile-idee .bouton {
     align-self: flex-start;
-}
-
-.tuile-form {
-    grid-area: form;
 }
 
 .etiquette {
@@ -354,6 +487,14 @@ textarea {
 }
 
 /* ---------- 6. Bibliothèque et cartes ---------- */
+/* Les trois sections ciblées par le menu doivent rester visibles sous la
+   bande de navigation flottante quand on y saute avec un lien #ancre. */
+#bibliotheque,
+#comment-ca-marche,
+#messagerie {
+    scroll-margin-top: calc(var(--hauteur-entete) + 1.5rem);
+}
+
 .bibliotheque {
     display: flex;
     flex-direction: column;
@@ -363,6 +504,14 @@ textarea {
 
 .bibliotheque h2 {
     font-size: 1.75rem;
+}
+
+.biblio-apercu-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .filtres {
@@ -391,6 +540,7 @@ textarea {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.75rem;
 }
 
@@ -409,6 +559,13 @@ textarea {
     color: var(--accent-clair);
 }
 
+/* Badge "Admin" : utilisé dans l'en-tête de chaque page, pas seulement dans
+   la bibliothèque, puisque ce rôle vaut pour toute la plateforme. */
+.badge-admin {
+    color: var(--cyan);
+    border-color: var(--cyan);
+}
+
 .prompt-contenu {
     flex: 1;
     font-size: 0.95rem;
@@ -417,33 +574,87 @@ textarea {
     overflow-wrap: anywhere;
 }
 
+.prompt-auteur {
+    font-size: 0.8rem;
+    color: var(--texte-doux);
+}
+
 .carte-actions {
     display: flex;
     justify-content: space-between;
     gap: 0.5rem;
 }
 
+.section-info {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+}
+
+.section-info h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.etapes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.etape {
+    padding: 1.25rem;
+    background: var(--surface-2);
+    border: 1px solid var(--bordure);
+    border-radius: 14px;
+}
+
+.etape-numero {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-bottom: 0.75rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--cyan));
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.etape h3 {
+    margin-bottom: 0.4rem;
+    font-size: 1.05rem;
+}
+
 /* ---------- 7. Responsive (tablette puis téléphone) ---------- */
 @media (max-width: 900px) {
     .bento {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-areas: 
+        grid-template-areas:
             "hero  hero"
             "total likes"
-            "idee  idee"
-            "form  form";
+            "idee  idee";
+    }
+
+    .entete {
+        border-radius: 24px;
+    }
+
+    .menu-navigation a {
+        font-size: 0.95rem;
     }
 }
 
 @media (max-width: 560px) {
     .bento {
         grid-template-columns: 1fr;
-        grid-template-areas: 
+        grid-template-areas:
             "hero"
             "total"
             "likes"
-            "idee"
-            "form";
+            "idee";
     }
 
     .tuile-hero {
@@ -452,6 +663,20 @@ textarea {
 
     .formulaire,
     .filtres {
+        grid-template-columns: 1fr;
+    }
+
+    .entete {
+        padding: 0.6rem 0.9rem;
+    }
+
+    /* Un pseudo long pousserait "Se déconnecter" hors de la bande : on le masque
+       sur petit écran plutôt que de risquer un bouton inaccessible. */
+    .nom-utilisateur-affiche {
+        display: none;
+    }
+
+    .etapes {
         grid-template-columns: 1fr;
     }
 }

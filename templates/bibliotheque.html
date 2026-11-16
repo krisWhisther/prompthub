@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Reprend le thème choisi sur la page d'accueil (même clé que CLE_THEME
+        // dans script.js), avant même l'affichage : sinon la page s'afficherait un
+        // bref instant en sombre avant que bibliotheque.js ait pu la corriger.
+        try {
+            document.documentElement.dataset.theme = localStorage.getItem("prompthub-theme") === "light" ? "light" : "dark";
+        } catch (erreur) {
+            document.documentElement.dataset.theme = "dark";
+        }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PromptHub : la bibliothèque complète de prompts, réservée aux membres.">
+    <title>Bibliothèque — PromptHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bibliotheque.css') }}">
+    <script src="{{ url_for('static', filename='bibliotheque.js') }}" defer></script>
+</head>
+<body>
+
+    <header class="entete" id="entete">
+        <a class="logo" href="/" aria-label="PromptHub, accueil">
+            <span class="logo-pastille" aria-hidden="true">✦</span>
+            PromptHub
+        </a>
+
+        <div class="entete-droite">
+            <button id="bouton-theme" class="bouton bouton-discret" type="button">Mode clair</button>
+            <div class="bloc-compte-entete">
+                <span id="nom-utilisateur-affiche" class="nom-utilisateur-affiche"></span>
+                <span id="badge-admin" class="badge badge-admin" hidden>Admin</span>
+                <button id="bouton-deconnexion" class="bouton bouton-discret" type="button">Se déconnecter</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="conteneur">
+
+        <div class="biblio-entete">
+            <div>
+                <h1>La bibliothèque</h1>
+                <p class="texte-doux">Cherche, filtre par catégorie ou par tag, et partage tes propres prompts.</p>
+            </div>
+            <button id="bouton-nouveau-prompt" class="bouton bouton-principal" type="button">+ Publier un prompt</button>
+        </div>
+
+        <div class="biblio-onglets" role="tablist">
+            <button class="onglet actif" type="button" data-onglet="tous" role="tab" aria-selected="true">Toute la bibliothèque</button>
+            <button class="onglet" type="button" data-onglet="mes-prompts" role="tab" aria-selected="false">Mes prompts</button>
+            <button class="onglet" type="button" data-onglet="favoris" role="tab" aria-selected="false">Mes favoris</button>
+        </div>
+
+        <div class="filtres filtres-biblio">
+            <div class="champ">
+                <label for="recherche">Rechercher</label>
+                <input id="recherche" type="search" placeholder="Un mot-clé..." autocomplete="off">
+            </div>
+            <div class="champ">
+                <label for="filtre-categorie">Catégorie</label>
+                <select id="filtre-categorie">
+                    <option value="">Toutes</option>
+                    {% for categorie in categories %}
+                    <option value="{{ categorie }}">{{ categorie }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="champ">
+                <label for="filtre-tag">Tag</label>
+                <input id="filtre-tag" type="text" placeholder="Ex : marketing" autocomplete="off">
+            </div>
+        </div>
+
+        <p id="message-liste" class="message" role="status"></p>
+        <div id="grille-prompts" class="grille-prompts"></div>
+
+    </main>
+
+    <footer class="pied">
+        Projet d'apprentissage : HTML, CSS, JavaScript, Python, SQL et Java.
+    </footer>
+
+    <!-- Fenêtre "Publier / modifier un prompt" : le même formulaire sert aux deux cas
+         (voir ouvrirModalePrompt dans bibliotheque.js). -->
+    <div class="modale" id="modale-prompt" hidden>
+        <div class="modale-fond" id="modale-prompt-fond"></div>
+        <div class="modale-carte" role="dialog" aria-modal="true" aria-labelledby="titre-modale-prompt">
+            <button type="button" class="modale-fermer" id="bouton-fermer-prompt" aria-label="Fermer">✕</button>
+            <h2 id="titre-modale-prompt">Publier un prompt</h2>
+
+            <form id="formulaire-prompt" class="formulaire" novalidate>
+                <div class="champ champ-large">
+                    <label for="prompt-titre">Titre</label>
+                    <input id="prompt-titre" type="text" required minlength="3" maxlength="60" placeholder="Ex : Coach de révision">
+                </div>
+                <div class="champ">
+                    <label for="prompt-categorie">Catégorie</label>
+                    <select id="prompt-categorie" required>
+                        {% for categorie in categories %}
+                        <option value="{{ categorie }}">{{ categorie }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="champ">
+                    <label for="prompt-tags">Tags (séparés par des virgules)</label>
+                    <input id="prompt-tags" type="text" placeholder="Ex : marketing, email, pro">
+                </div>
+                <div class="champ champ-large">
+                    <label for="prompt-contenu">Contenu du prompt</label>
+                    <textarea id="prompt-contenu" rows="4" required minlength="10" maxlength="500" placeholder="Écris ton prompt ici..."></textarea>
+                </div>
+                <div class="champ-large ligne-envoi">
+                    <button class="bouton bouton-principal" type="submit" id="bouton-valider-prompt">Publier</button>
+                    <p id="message-prompt" class="message" role="status"></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Fenêtre "Commentaires" : ouverte depuis le bouton 💬 d'une carte. -->
+    <div class="modale" id="modale-commentaires" hidden>
+        <div class="modale-fond" id="modale-commentaires-fond"></div>
+        <div class="modale-carte" role="dialog" aria-modal="true" aria-labelledby="titre-modale-commentaires">
+            <button type="button" class="modale-fermer" id="bouton-fermer-commentaires" aria-label="Fermer">✕</button>
+            <h2 id="titre-modale-commentaires">Commentaires</h2>
+
+            <div id="liste-commentaires" class="liste-commentaires"></div>
+
+            <form id="formulaire-commentaire" novalidate>
+                <div class="champ">
+                    <label for="commentaire-texte">Ajouter un commentaire</label>
+                    <textarea id="commentaire-texte" rows="2" required minlength="1" maxlength="500" placeholder="Ton avis sur ce prompt..."></textarea>
+                </div>
+                <div class="ligne-envoi">
+                    <button class="bouton bouton-principal" type="submit">Commenter</button>
+                    <p id="message-commentaire" class="message" role="status"></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

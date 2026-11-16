@@ -9,13 +9,35 @@
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-    
-    <header class="entete">
+
+    <!-- Bande de navigation : flotte au-dessus du contenu, se range au défilement vers
+         le bas et revient dès qu'on remonte. Floutée et semi-transparente (voir le CSS). -->
+    <header class="entete" id="entete">
+        <div class="entete-gauche">
+            <button id="bouton-menu" class="bouton-icone" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menu-navigation" aria-label="Ouvrir le menu">
+                <span class="icone-menu" aria-hidden="true"></span>
+            </button>
+            <nav id="menu-navigation" class="menu-navigation" hidden>
+                <a href="/bibliotheque" id="lien-bibliotheque" data-protege="true">Bibliothèque</a>
+                <a href="#comment-ca-marche">Comment ça marche</a>
+                <a href="#messagerie" id="lien-messagerie" data-protege="true">Messagerie</a>
+                <button id="bouton-theme" type="button">Mode clair</button>
+            </nav>
+        </div>
+
         <a class="logo" href="/" aria-label="PromptHub, accueil">
-            <span class="logo-pastille" aria-hidden="true">&#10022;</span>
+            <span class="logo-pastille" aria-hidden="true">✦</span>
             PromptHub
         </a>
-        <button id="bouton-theme" class="bouton bouton-discret" type="button">Mode clair</button>
+
+        <div class="entete-droite">
+            <a id="lien-connexion" class="bouton bouton-principal" href="/connexion">Se connecter</a>
+            <div id="bloc-compte-entete" class="bloc-compte-entete" hidden>
+                <span id="nom-utilisateur-affiche" class="nom-utilisateur-affiche"></span>
+                <span id="badge-admin" class="badge badge-admin" hidden>Admin</span>
+                <button id="bouton-deconnexion" class="bouton bouton-discret" type="button">Se déconnecter</button>
+            </div>
+        </div>
     </header>
 
     <main class="conteneur">
@@ -40,7 +62,7 @@
             </article>
 
             <article class="tuile tuile-likes">
-                <p class="etiquette">J'aime reçus</p>
+                <p class="etiquette">Favoris</p>
                 <p class="stat-nombre" id="stat-likes">0</p>
                 <p class="texte-doux petit">Merci à la communauté</p>
             </article>
@@ -51,57 +73,54 @@
                 <button id="bouton-idee" class="bouton bouton-principal" type="button">Donne-moi une idée</button>
             </article>
 
-            <article class="tuile tuile-form">
-                <h2>Ajouter un prompt</h2>
-                <form id="formulaire-prompt" class="formulaire">
-                    <div class="champ">
-                        <label for="champ-titre">Titre</label>
-                        <input id="champ-titre" name="titre" type="text" required minlength="3" maxlength="60" placeholder="Ex : Coach de révision">
-                    </div>
-                    <div class="champ">
-                        <label for="champ-categorie">Catégorie</label>
-                        <select id="champ-categorie" name="categorie" required>
-                            {% for categorie in categories %}
-                            <option value="{{ categorie }}">{{ categorie }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="champ champ-large">
-                        <label for="champ-contenu">Contenu du prompt</label>
-                        <textarea id="champ-contenu" name="contenu" rows="4" required minlength="10" maxlength="500" placeholder="Écris ton prompt ici..."></textarea>
-                    </div>
-                    <div class="champ-large ligne-envoi">
-                        <button class="bouton bouton-principal" type="submit">Publier</button>
-                        <p id="message-formulaire" class="message" role="status"></p>
-                    </div>
-                </form>
-            </article>
-
         </section>
 
-        <!-- Liste des prompts, remplie par JavaScript -->
+        <!-- Aperçu public de la bibliothèque (voir apercu_prompts dans app.py) : quelques
+             prompts au hasard, pour donner envie. La bibliothèque complète (recherche,
+             favoris, notes, tags, commentaires, tes propres prompts...) est sur sa propre
+             page, réservée aux membres connectés (voir /bibliotheque). -->
         <section id="bibliotheque" class="bibliotheque" aria-labelledby="titre-bibliotheque">
-            <h2 id="titre-bibliotheque">La bibliothèque</h2>
-
-            <div class="filtres">
-                <div class="champ">
-                    <label for="recherche">Rechercher</label>
-                    <input id="recherche" type="search" placeholder="Un mot-clé..." autocomplete="off">
-                </div>
-                <div class="champ">
-                    <label for="filtre-categorie">Catégorie</label>
-                    <select id="filtre-categorie">
-                        <option value="">Toutes</option>
-                        {% for categorie in categories %}
-                        <option value="{{ categorie }}">{{ categorie }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+            <div class="biblio-apercu-entete">
+                <h2 id="titre-bibliotheque">La bibliothèque</h2>
+                <a class="bouton bouton-principal" href="/bibliotheque" id="lien-bibliotheque-complete">Voir la bibliothèque complète</a>
             </div>
 
             <p id="message-liste" class="message" role="status"></p>
             <div id="grille-prompts" class="grille-prompts"></div>
-        </section>  
+        </section>
+
+        <!-- Section informative : ouverte à tout le monde, pas d'action à protéger ici. -->
+        <section id="comment-ca-marche" class="section-info" aria-labelledby="titre-comment-ca-marche">
+            <h2 id="titre-comment-ca-marche">Comment ça marche</h2>
+            <div class="etapes">
+                <article class="etape">
+                    <p class="etape-numero">1</p>
+                    <h3>Crée ton compte</h3>
+                    <p class="texte-doux">Une seule inscription suffit. Ensuite, tu te reconnectes simplement avec ton pseudo.</p>
+                </article>
+                <article class="etape">
+                    <p class="etape-numero">2</p>
+                    <h3>Parcours la bibliothèque</h3>
+                    <p class="texte-doux">Cherche, filtre par catégorie et copie les prompts qui t'intéressent, sans rien avoir à créer.</p>
+                </article>
+                <article class="etape">
+                    <p class="etape-numero">3</p>
+                    <h3>Publie et interagis</h3>
+                    <p class="texte-doux">Connecté, rejoins la bibliothèque complète pour ajouter tes prompts, les noter, les mettre en favori et commenter ceux des autres membres.</p>
+                </article>
+                <article class="etape">
+                    <p class="etape-numero">4</p>
+                    <h3>Échange (bientôt)</h3>
+                    <p class="texte-doux">Une messagerie arrive pour discuter des prompts et partager des idées avec la communauté.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- Section protégée : son contenu réel arrive avec la messagerie (prochaine phase). -->
+        <section id="messagerie" class="section-info" aria-labelledby="titre-messagerie">
+            <h2 id="titre-messagerie">Messagerie</h2>
+            <p class="texte-doux">La messagerie entre membres arrive bientôt. Reviens ici une fois connecté !</p>
+        </section>
 
     </main>
 

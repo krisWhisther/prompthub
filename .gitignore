@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 prompthub.db
+secret_key.txt
+oauth_config.json
+email_config.json

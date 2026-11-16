@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        // Reprend le thème choisi sur la page d'accueil (même clé que CLE_THEME
+        // dans script.js), avant même l'affichage : sinon la page s'afficherait un
+        // bref instant en sombre avant que reinitialiser.js ait pu la corriger.
+        try {
+            document.documentElement.dataset.theme = localStorage.getItem("prompthub-theme") === "light" ? "light" : "dark";
+        } catch (erreur) {
+            document.documentElement.dataset.theme = "dark";
+        }
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PromptHub : choisis un nouveau mot de passe.">
+    <title>Nouveau mot de passe — PromptHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='connexion.css') }}">
+    <script src="{{ url_for('static', filename='reinitialiser.js') }}" defer></script>
+</head>
+<body class="page-connexion">
+
+    <!-- Même décor que la page de connexion (voir connexion.html) : purement visuel. -->
+    <div class="fond-tech" aria-hidden="true">
+        <div class="halo halo-1"></div>
+        <div class="halo halo-2"></div>
+        <div class="anneau"></div>
+        <div class="hexagones">
+            <span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span>
+            <span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span><span>&#x2B22;</span>
+        </div>
+    </div>
+
+    <a class="retour-accueil" href="/">
+        <span class="logo-pastille" aria-hidden="true">✦</span>
+        PromptHub
+    </a>
+
+    <main class="scene">
+        {% if valide %}
+        <div class="modale-carte">
+            <h1>Nouveau mot de passe</h1>
+            <p class="texte-doux">Choisis le nouveau mot de passe de ton compte.</p>
+
+            <form id="formulaire-reinitialiser" novalidate>
+                <input type="hidden" id="jeton" value="{{ jeton }}">
+
+                <div class="input-box">
+                    <input type="password" id="nouveau-motdepasse" placeholder="Nouveau mot de passe" autocomplete="new-password" required minlength="8">
+                    <span class="icone" aria-hidden="true">🔒</span>
+                </div>
+                <button type="button" class="bascule-mdp" data-cible="nouveau-motdepasse">Afficher le mot de passe</button>
+                <small id="motdepasse-message" class="indice">8 caractères minimum, avec une majuscule, un chiffre et un symbole</small>
+
+                <div class="input-box">
+                    <input type="password" id="nouvelle-confirmation" placeholder="Confirme le mot de passe" autocomplete="new-password" required>
+                    <span class="icone" aria-hidden="true">🔒</span>
+                </div>
+                <button type="button" class="bascule-mdp" data-cible="nouvelle-confirmation">Afficher le mot de passe</button>
+                <small id="confirmation-message" class="indice">Les mots de passe ne correspondent pas</small>
+
+                <button type="submit" class="btn">Mettre à jour le mot de passe</button>
+                <p id="message-reinitialiser" class="message" role="status"></p>
+            </form>
+        </div>
+        {% else %}
+        <div class="modale-carte">
+            <h1>Lien expiré</h1>
+            <p class="texte-doux">Ce lien de réinitialisation n'est plus valable : il a peut-être déjà servi, ou il date de plus de 30 minutes.</p>
+            <a class="btn" href="/connexion">Retour à la connexion</a>
+        </div>
+        {% endif %}
+    </main>
+
+</body>
+</html>
